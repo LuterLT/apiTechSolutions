@@ -6,9 +6,10 @@ import br.com.techsolutionsglobal.tarefastechsolutions.dto.TarefaUpdateDTO;
 import br.com.techsolutionsglobal.tarefastechsolutions.model.Tarefa;
 import br.com.techsolutionsglobal.tarefastechsolutions.repository.TarefaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TarefaService {
@@ -52,7 +53,11 @@ public class TarefaService {
 
     // Buscar Tarefa por ID ------------------------------------------
     public TarefaResponseDTO buscarPorId(Long id) {
-        Tarefa tarefa = tarefaRepository.findById(id).orElseThrow();
+        Tarefa tarefa = tarefaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tarefa não encontrada"
+                ));
         return new TarefaResponseDTO(
                 tarefa.getId(),
                 tarefa.getTitulo(),
@@ -65,7 +70,11 @@ public class TarefaService {
 
     // Atualizar Tarefa ------------------------------------------------
     public TarefaResponseDTO atualizar(Long id, TarefaUpdateDTO dto) {
-        Tarefa tarefa = tarefaRepository.findById(id).orElseThrow();
+        Tarefa tarefa = tarefaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tarefa não encontrada"
+                ));
 
             tarefa.setTitulo(dto.titulo());
             tarefa.setDescricao(dto.descricao());
@@ -84,5 +93,15 @@ public class TarefaService {
                 tarefa.getConcluida(),
                 tarefa.getAtivo()
         );
+    }
+
+    // Deletar Tarefa ----------------------------------------------------
+    public boolean deletar(Long id) {
+        if (tarefaRepository.existsById(id)) {
+            tarefaRepository.deleteById(id);
+            return true;
+        }
+        return false;
+
     }
 }
